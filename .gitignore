@@ -1,0 +1,2 @@
+# Don't put the env variable file with Astra DB tokens in the repo
+.env
