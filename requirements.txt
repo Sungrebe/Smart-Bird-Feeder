@@ -1,0 +1,4 @@
+astrapy
+python-dotenv
+transformers
+torch
