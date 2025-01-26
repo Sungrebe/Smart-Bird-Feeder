@@ -1,8 +1,10 @@
-import os, csv, requests, logging
+import os, csv, requests, logging, glob
 from astrapy import DataAPIClient
 from pathlib import Path
 from dotenv import load_dotenv
 from tqdm import tqdm
+
+from embedding_extraction import process_image
 
 load_dotenv()
 
@@ -56,7 +58,8 @@ def get_images():
     with open("aba_sp_list.txt", 'r') as aba_sp_list_file:
         for sp_name in aba_sp_list_file.readlines():
             print(f"Currently downloading {sp_name}")
-            sp_asset_ids = read_csv(sp_name.rstrip())
+            sp_name = sp_name.rstrip()
+            sp_asset_ids = read_csv(sp_name)
             for i in tqdm(range(len(sp_asset_ids))):
                 img_url = f"https://cdn.download.ams.birds.cornell.edu/api/v2/asset/{sp_asset_ids[i]}/2400"
 
@@ -64,9 +67,14 @@ def get_images():
                     data = requests.get(img_url, timeout=5).content
                     photo_dir_path = Path(f'bird_photos/{sp_name}/')
                     os.makedirs(photo_dir_path, exist_ok=True)
-                    f = open(photo_dir_path / f"{sp_name}_{i}.jpg", 'wb')
+                    f = open(photo_dir_path / f"{sp_name}_{str(i).zfill(3)}.jpg", 'wb')
                     f.write(data)
                     f.close()
                 except requests.exceptions.ReadTimeout as timeout_err:
                     logging.exception(timeout_err)
                     i -= 1
+
+def upload_images():
+    img_path = Path("bird_photos/acorn_woodpecker/acorn_woodpecker_000.jpg")
+
+    img_tensor = process_image(str(img_path), str(Path("pretrained_model")))
