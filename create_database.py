@@ -74,7 +74,28 @@ def get_images():
                     logging.exception(timeout_err)
                     i -= 1
 
-def upload_images():
-    img_path = Path("bird_photos/acorn_woodpecker/acorn_woodpecker_000.jpg")
+def upload_images(col):
+    """
+    Upload images to the Astra db collection
+    Args:
+        - col: Astra db collection
+    """
+    img_paths = glob.glob("bird_photos/**/*.jpg")
 
-    img_tensor = process_image(str(img_path), str(Path("pretrained_model")))
+    for img_path in tqdm(img_paths):
+        sp_name = img_path.split('/')[1]
+        img_id = img_path.split('/')[2]
+
+        img_tensor = process_image(img_path, str(Path("pretrained_model")))
+        
+        if img_tensor is not None:
+            img_vector = img_tensor.flatten()
+
+            doc_counts = col.count_documents({"_id": img_id}, upper_bound=1)
+
+            if doc_counts == 0:
+                col.insert_one({
+                    "text": sp_name,
+                    "_id": img_id,
+                    "$vector": img_vector.tolist()
+                })

@@ -23,8 +23,6 @@ def process_image(image_path, model_path):
             images=Image.open(image_path),
             return_tensors="pt",
         )
-
-        print(f"input={input}")
         
         return pretrained_model.vision_model(**input).pooler_output
     except UnidentifiedImageError:

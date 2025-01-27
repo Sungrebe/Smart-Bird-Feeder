@@ -2,3 +2,4 @@ astrapy
 python-dotenv
 transformers
 torch
+Pillow
